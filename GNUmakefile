@@ -1,8 +1,9 @@
-ARCH_PREFIX := aarch64-linux-gnu-
+ARCH_PREFIX := arm-none-eabi-
 ASM 		:= $(ARCH_PREFIX)as
 CC 			:= $(ARCH_PREFIX)gcc
 LD 			:= $(ARCH_PREFIX)ld
 OBJCPY		:= $(ARCH_PREFIX)objcopy
+QEMU		:= qemu-system-aarch64
 
 BLASRC		:= $(wildcard src/start/*.asm)
 KASRC		:= $(wildcard src/kernel/*.asm)
@@ -19,11 +20,14 @@ IMG		:= $(BUILD_DIR)/kernel8.img
 OBJECTS := $(patsubst %.asm,$(BUILD_DIR)/%.o,$(notdir $(BLASRC) $(KASRC)))
 OBJECTS += $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(KCSRC)))
 
-.PHONY: all clean bootldr
+CFLAGS := -I src/include -O2 -Wall -Wextra -nostdlib -ffreestanding -mcpu=cortex-a76
+QFLAGS := -machine virt -cpu cortex-a76 -vnc :0
+
+.PHONY: all clean run
 
 all: $(IMG)
 
-bootldr: $(IMG)
+run: $(IMG)
 
 $(IMG): $(ELF)
 	$(OBJCPY) -O binary $< $@
@@ -32,7 +36,7 @@ $(ELF): $(OBJECTS) $(LNKSCR) | $(BUILD_DIR)
 	$(LD) -T $(LNKSCR) $(OBJECTS) -o $(ELF)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/kernel/%.c | $(BUILD_DIR)
-	$(CC) -c $< -o $@ -O2 -Wall -Wextra -nostdlib -ffreestanding -mcpu=cortex-a72
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/kernel/%.asm | $(BUILD_DIR)
 	$(ASM) $< -o $@
@@ -42,6 +46,9 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/start/%.asm | $(BUILD_DIR)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+run-qemu:
+	$(QEMU) $(QFLAGS) 
 
 clean:
 	rm -rf $(BUILD_DIR)
