@@ -5,8 +5,8 @@ LD 			:= $(ARCH_PREFIX)ld
 OBJCPY		:= $(ARCH_PREFIX)objcopy
 QEMU		:= qemu-system-aarch64
 
-BLASRC		:= $(wildcard src/start/*.asm)
-KASRC		:= $(wildcard src/kernel/*.asm)
+BLASRC		:= $(wildcard src/start/*.S)
+KASRC		:= $(wildcard src/kernel/*.S)
 KCSRC		:= $(wildcard src/kernel/*.c)
 ALLSRC  	:= $(BLASRC) $(KASRC) $(KCSRC)
 
@@ -17,12 +17,12 @@ LNKSCR	:= $(SRC_DIR)/linker.ld
 ELF		:= $(BUILD_DIR)/kernel8.elf
 IMG		:= $(BUILD_DIR)/kernel8.img
 
-OBJECTS := $(patsubst %.asm,$(BUILD_DIR)/%.o,$(notdir $(BLASRC) $(KASRC)))
+OBJECTS := $(patsubst %.S,$(BUILD_DIR)/%.o,$(notdir $(BLASRC) $(KASRC)))
 OBJECTS += $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(KCSRC)))
 
-CFLAGS := -I src/include -O2 -Wall -Wextra -nostdlib -ffreestanding -mcpu=cortex-a76 -fpic -march=armv8-a -mabi=lp64
+CFLAGS := -I src/include -O2 -Wall -Wextra -nostdlib -ffreestanding -mcpu=cortex-a76 -march=armv8-a -mabi=lp64 -ggdb
 AFLAGS := -march=armv8-a+nofp
-QFLAGS := -machine virt -cpu cortex-a76 -vnc :0 -kernel $(IMG)
+QFLAGS := -machine virt -cpu cortex-a76 -device virtio-gpu-pci -serial stdio -s -S -kernel $(ELF)
 
 .PHONY: all clean run run-qemu
 
@@ -39,11 +39,11 @@ $(ELF): $(OBJECTS) $(LNKSCR) | $(BUILD_DIR)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/kernel/%.c | $(BUILD_DIR)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/kernel/%.asm | $(BUILD_DIR)
-	$(ASM) $< -o $@
+$(BUILD_DIR)/%.o: $(SRC_DIR)/kernel/%.S | $(BUILD_DIR)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/start/%.asm | $(BUILD_DIR)
-	$(ASM) $(AFLAGS) $< -o $@
+$(BUILD_DIR)/%.o: $(SRC_DIR)/start/%.S | $(BUILD_DIR)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
