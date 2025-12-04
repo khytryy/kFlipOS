@@ -1,4 +1,5 @@
-void KfoMain() {
+#include <kFipOS.h>
 
-    for (;;);
+void KfoMain() {
+    KfoHalt();
 }
