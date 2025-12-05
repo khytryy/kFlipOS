@@ -1,7 +1,11 @@
 #include <kFipOS.h>
-#include <logging.h>
+#include <uart.h>
+
+void _putchar(char character) {
+    UARTPutC(character);
+}
 
 void KfoMain() {
-    UARTPutS("[SYSTEM] KfoMain called!\n");
+    UARTPutS("\x1b[32mKraba!\n\x1b[37m");
     KfoHalt();
 }

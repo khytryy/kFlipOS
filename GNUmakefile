@@ -22,7 +22,7 @@ OBJECTS += $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(KCSRC)))
 
 CFLAGS := -I src/include -O2 -Wall -Wextra -nostdlib -ffreestanding -mcpu=cortex-a76 -march=armv8-a -mabi=lp64 -ggdb
 AFLAGS := -march=armv8-a+nofp
-QFLAGS := -machine virt -cpu cortex-a76 -serial file:serial.log \
+QFLAGS := -machine virt -cpu cortex-a76 -serial stdio \
 		  -s -S -kernel $(ELF)
 
 .PHONY: all clean run run-qemu

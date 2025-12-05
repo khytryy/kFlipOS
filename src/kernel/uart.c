@@ -1,4 +1,4 @@
-#include <logging.h>
+#include <uart.h>
 
 uint32_t *GetUARTRegValue(uint64_t BaseAddress, uint32_t Offset) {
     const uint64_t Address = BaseAddress + Offset;
