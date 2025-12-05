@@ -22,3 +22,5 @@ void WaitTXFIFONotFull();
 
 void UARTPutC(char C);
 void UARTPutS(const char* S);
+
+void WaitUARTDone();

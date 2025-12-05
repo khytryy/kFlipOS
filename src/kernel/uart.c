@@ -3,12 +3,16 @@
 uint32_t *GetUARTRegValue(uint64_t BaseAddress, uint32_t Offset) {
     const uint64_t Address = BaseAddress + Offset;
 
-    return (uint32_t *)(Address + Offset);
+    return (uint32_t *)(Address);
 }
 
 void WaitTXFIFONotFull() {
     while (*UARTFR & (1 << 5)) {
     }
+}
+
+void WaitUARTDone() {
+    while (*UARTFR & (1 << 3)) {}
 }
 
 void UARTPutC(char C) {
